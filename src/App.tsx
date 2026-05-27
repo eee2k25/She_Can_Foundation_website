@@ -9,6 +9,7 @@ function App() {
   const [subscribed, setSubscribed] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
+  const [error, setError] = useState('');
   const [statsVisible, setStatsVisible] = useState(false);
   const [counters, setCounters] = useState({ women: 0, communities: 0, programs: 0, states: 0 });
 
@@ -61,8 +62,12 @@ function App() {
   }, [statsVisible]);
 
   const handleSubscribe = async () => {
-    if (!email || !email.includes('@')) return;
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email');
+      return;
+    }
     setSubscribing(true);
+    setError('');
     try {
       const res = await fetch('/api/subscribers', {
         method: 'POST',
@@ -72,9 +77,14 @@ function App() {
       if (res.ok) {
         setSubscribed(true);
         setEmail('');
+        setError('');
+      } else {
+        const data = await res.json();
+        setError(data.error || 'Failed to subscribe. Please try again.');
       }
     } catch (err) {
       console.error(err);
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setSubscribing(false);
     }
@@ -204,7 +214,7 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8 }}
               >
-                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-6 ${darkMode ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-rose-50 text-rose-600 border border-rose-200'}`}>
+                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase mb-6 ${darkMode ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-rose-100 text-rose-600 border border-rose-200'}`}>
                   <Sparkles className="w-3 h-3" />
                   Empowering Since 2018
                 </span>
@@ -252,7 +262,7 @@ function App() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => scrollTo('about')}
-                  className={`px-8 py-4 font-semibold rounded-2xl border-2 transition-colors text-base ${darkMode ? 'border-gray-700 text-gray-300 hover:border-rose-500 hover:text-rose-400' : 'border-gray-200 text-gray-700 hover:border-rose-500 hover:text-rose-500'}`}
+                  className={`px-8 py-4 font-semibold rounded-2xl border-2 transition-colors text-base ${darkMode ? 'border-gray-700 text-gray-300 hover:border-rose-500 hover:text-rose-400' : 'border-gray-300 text-gray-700 hover:border-rose-500 hover:text-rose-600'}`}
                 >
                   Learn More
                 </motion.button>
@@ -308,10 +318,10 @@ function App() {
                 <span className="bg-gradient-to-r from-rose-500 to-orange-400 bg-clip-text text-transparent"> Every Woman Thrives</span>
               </h2>
               <p className={`text-lg mb-6 leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                She Can Foundation was born from a simple yet powerful belief — that every woman and girl, regardless of her background, deserves the opportunity to learn, grow, and lead. Founded in 2018, we have been working tirelessly at the grassroots level to break down barriers and create pathways for women's empowerment.
+                She Can Foundation was born from a simple yet powerful belief — that every woman and girl, regardless of her background, deserves the opportunity to learn, grow, and lead. Founded in 2018, we have been on a mission to create transformative change across India.
               </p>
               <p className={`text-lg mb-8 leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Our holistic approach combines education, vocational training, health awareness, and community building to ensure lasting change. We don't just empower individuals — we transform entire communities by investing in the potential of women.
+                Our holistic approach combines education, vocational training, health awareness, and community building to ensure lasting change. We don't just empower individuals — we transform communities.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 {[
@@ -446,7 +456,7 @@ function App() {
                     key="form"
                     initial={{ opacity: 1 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+                    className="flex flex-col gap-3 max-w-md mx-auto"
                   >
                     <input
                       type="email"
@@ -454,14 +464,17 @@ function App() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleSubscribe()}
-                      className={`flex-1 px-5 py-3.5 rounded-xl border-2 text-base font-medium outline-none transition-colors ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500 focus:border-rose-500' : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 focus:border-rose-500'}`}
+                      className={`px-5 py-3.5 rounded-xl border-2 text-base font-medium outline-none transition-colors ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'} focus:border-rose-500`}
                     />
+                    {error && (
+                      <p className="text-red-500 text-sm font-medium">{error}</p>
+                    )}
                     <motion.button
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={handleSubscribe}
                       disabled={subscribing}
-                      className="px-8 py-3.5 bg-gradient-to-r from-rose-500 to-orange-400 text-white font-semibold rounded-xl shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 transition-shadow disabled:opacity-60 whitespace-nowrap"
+                      className="px-8 py-3.5 bg-gradient-to-r from-rose-500 to-orange-400 text-white font-semibold rounded-xl shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {subscribing ? 'Subscribing...' : 'Subscribe'}
                     </motion.button>
